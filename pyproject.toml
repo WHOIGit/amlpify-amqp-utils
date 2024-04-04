@@ -24,3 +24,6 @@ packages = ["src/amqp"]
 
 [project.urls]
 Repository = "https://github.com/WHOIGit/amplify-amqp-utils"
+
+[tool.hatch.metadata]
+allow-direct-references = true
