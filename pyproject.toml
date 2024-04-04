@@ -7,6 +7,7 @@ name = "amplify-amqp-utils"
 version = "0.1.0"
 description = "AMQP Messaging utilities for the Amplify project"
 readme = "README.md"
+license = "MIT"
 authors = [{name = "Sidney Batchelder", email = "sbatchelder@whoi.edu"}]
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -24,6 +25,3 @@ packages = ["src/amqp"]
 
 [project.urls]
 Repository = "https://github.com/WHOIGit/amplify-amqp-utils"
-
-[tool.hatch.metadata]
-allow-direct-references = true
