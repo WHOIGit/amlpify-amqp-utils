@@ -1,0 +1,26 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "amplify-amqp-utils"
+version = "0.1.0"
+description = "AMQP Messaging utilities for the Amplify project"
+readme = "README.md"
+authors = [{name = "Sidney Batchelder", email = "sbatchelder@whoi.edu"}]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+keywords = ['amqp', 'rabbitmq', 'amplify', 'messaging']
+dependencies = [
+    'pika',
+    'aio_pika',
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/amqp"]
+
+[project.urls]
+Repository = "https://github.com/WHOIGit/amplify-amqp-utils"
