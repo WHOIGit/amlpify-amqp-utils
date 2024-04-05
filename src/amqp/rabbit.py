@@ -65,7 +65,7 @@ class AIOClient:
         self.exchange_type = exchange_type
 
         conn_url = f"amqp://{self.user}:{password}@{self.host}/"
-        self.connection = await aio_pika.connect_robust( conn_url )
+        self.connection = aio_pika.connect_robust( conn_url )
 
     async def publish(self, message, routing_key=''):
         async with self.connection:
