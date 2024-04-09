@@ -13,14 +13,22 @@ class Client:
         assert exchange_type in list(
             pika.exchange_type.ExchangeType), f'"Invalid exchange type: "{exchange_type}" not in {list(pika.exchange_type.ExchangeType)}'
         self.exchange_type = exchange_type
+        self.credentials = pika.PlainCredentials(self.user, password)
 
-        credentials = pika.PlainCredentials(self.user, password)
-        self.connection = pika.BlockingConnection(pika.ConnectionParameters(self.host, credentials=credentials))
-
+    def close(self):
+        self.connection.close()
+    def connect(self):
+        conn_params = pika.ConnectionParameters(self.host, credentials=self.credentials)
+        self.connection = pika.BlockingConnection(conn_params)
         self.channel = self.connection.channel()
         self.channel.exchange_declare(exchange=self.exchange_name,
                                       exchange_type=self.exchange_type,
                                       durable=False, )
+    def __enter__(self):
+        self.connect()
+        return self
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
 
     def publish(self, message, routing_key=''):
         self.channel.basic_publish(exchange=self.exchange_name,
@@ -41,18 +49,14 @@ class Client:
                                    auto_ack=True)
         self.channel.start_consuming()
 
-    def close(self):
-        self.connection.close()
 
 def publish(message, host, user, password, exchange_name, exchange_type='fanout', routing_key=''):
-    client = Client(host, user, password, exchange_name, exchange_type)
-    client.publish(message, routing_key)
-    client.close()
+    with Client(host, user, password, exchange_name, exchange_type) as client:
+        client.publish(message, routing_key)
 
 def subscribe(callback, host, user, password, exchange_name, exchange_type='fanout', routing_key='', queue_name=''):
-    client = Client(host, user, password, exchange_name, exchange_type)
-    client.subscribe(callback, routing_key, queue_name)  # blocking
-    client.close()
+    with Client(host, user, password, exchange_name, exchange_type) as client:
+        client.subscribe(callback, routing_key, queue_name)
 
 
 # AIOClient is untested (2024-04-04)
