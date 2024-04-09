@@ -30,7 +30,7 @@ class Client:
     def publish(self, message, routing_key=''):
         self.channel.basic_publish(exchange=self.exchange_name,
                                    routing_key=routing_key,
-                                   body=json.dumps(message))
+                                   body=json.dumps(message).encode())
 
     def subscribe(self, callback, routing_key='', queue=''):
         def on_message(ch, method, properties, body):
