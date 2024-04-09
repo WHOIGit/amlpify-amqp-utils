@@ -2,6 +2,8 @@ import json
 import asyncio
 
 import pika
+from pika.exchange_type import ExchangeType
+
 import aio_pika
 
 
@@ -10,8 +12,9 @@ class Client:
         self.host = host
         self.user = user
         self.exchange_name = exchange_name
-        assert exchange_type in list(
-            pika.exchange_type.ExchangeType), f'"Invalid exchange type: "{exchange_type}" not in {list(pika.exchange_type.ExchangeType)}'
+        exchange_type_list = list(ExchangeType)
+        if not exchange_type in exchange_type_list:
+            raise ValueError(f'"Invalid exchange type: "{exchange_type}" not in {exchange_type_list}')
         self.exchange_type = exchange_type
 
         credentials = pika.PlainCredentials(self.user, password)
@@ -61,7 +64,9 @@ class AIOClient:
         self.host = host
         self.user = user
         self.exchange_name = exchange_name
-        assert exchange_type in list(aio_pika.ExchangeType),  f'"Invalid exchange type: "{exchange_type}" not in {list(aio_pika.ExchangeType)}'
+        exchange_type_list = list(ExchangeType)
+        if not exchange_type in exchange_type_list:
+            raise ValueError(f'"Invalid exchange type: "{exchange_type}" not in {exchange_type_list}')
         self.exchange_type = exchange_type
 
         conn_url = f"amqp://{self.user}:{password}@{self.host}/"
