@@ -3,7 +3,6 @@ import asyncio
 
 import pika
 from pika.exchange_type import ExchangeType
-
 import aio_pika
 
 
@@ -15,18 +14,14 @@ class Client:
         if not exchange_type in exchange_type_list:
             raise ValueError(f'"Invalid exchange type: "{exchange_type}" not in {exchange_type_list}')
         self.exchange_type = exchange_type
-
         self.credentials = pika.PlainCredentials(user, password)
-
 
     def __enter__(self):
         self.connection = pika.BlockingConnection(pika.ConnectionParameters(self.host, credentials=self.credentials))
-
         self.channel = self.connection.channel()
         self.channel.exchange_declare(exchange=self.exchange_name,
                                       exchange_type=self.exchange_type,
                                       durable=False, )
-        
         return self
         
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -50,6 +45,16 @@ class Client:
                                    on_message_callback=on_message,
                                    auto_ack=True)
         self.channel.start_consuming()
+
+
+
+def publish(message, host, user, password, exchange_name, exchange_type='fanout', routing_key=''):
+    with Client(host, user, password, exchange_name, exchange_type) as client:
+        client.publish(message, routing_key)
+
+def subscribe(callback, host, user, password, exchange_name, exchange_type='fanout', routing_key='', queue_name=''):
+    with Client(host, user, password, exchange_name, exchange_type) as client:
+        client.subscribe(callback, routing_key, queue_name)
 
 
 # AIOClient is untested (2024-04-04)
