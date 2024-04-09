@@ -27,6 +27,8 @@ class Client:
                                       exchange_type=self.exchange_type,
                                       durable=False, )
         
+        return self
+        
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.connection.close()
 
