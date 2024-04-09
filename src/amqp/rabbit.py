@@ -10,20 +10,25 @@ import aio_pika
 class Client:
     def __init__(self, host, user, password, exchange_name, exchange_type='direct'):
         self.host = host
-        self.user = user
         self.exchange_name = exchange_name
         exchange_type_list = list(ExchangeType)
         if not exchange_type in exchange_type_list:
             raise ValueError(f'"Invalid exchange type: "{exchange_type}" not in {exchange_type_list}')
         self.exchange_type = exchange_type
 
-        credentials = pika.PlainCredentials(self.user, password)
-        self.connection = pika.BlockingConnection(pika.ConnectionParameters(self.host, credentials=credentials))
+        self.credentials = pika.PlainCredentials(user, password)
+
+
+    def __enter__(self):
+        self.connection = pika.BlockingConnection(pika.ConnectionParameters(self.host, credentials=self.credentials))
 
         self.channel = self.connection.channel()
         self.channel.exchange_declare(exchange=self.exchange_name,
                                       exchange_type=self.exchange_type,
                                       durable=False, )
+        
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.connection.close()
 
     def publish(self, message, routing_key=''):
         self.channel.basic_publish(exchange=self.exchange_name,
@@ -43,19 +48,6 @@ class Client:
                                    on_message_callback=on_message,
                                    auto_ack=True)
         self.channel.start_consuming()
-
-    def close(self):
-        self.connection.close()
-
-def publish(message, host, user, password, exchange_name, exchange_type='fanout', routing_key=''):
-    client = Client(host, user, password, exchange_name, exchange_type)
-    client.publish(message, routing_key)
-    client.close()
-
-def subscribe(callback, host, user, password, exchange_name, exchange_type='fanout', routing_key='', queue_name=''):
-    client = Client(host, user, password, exchange_name, exchange_type)
-    client.subscribe(callback, routing_key, queue_name)  # blocking
-    client.close()
 
 
 # AIOClient is untested (2024-04-04)
