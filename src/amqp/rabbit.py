@@ -57,14 +57,23 @@ class AIOClient:
     def __init__(self, host, user, password, exchange_name, exchange_type='direct'):
         self.host = host
         self.user = user
+        self.password = password
         self.exchange_name = exchange_name
         exchange_type_list = list(ExchangeType)
         if not exchange_type in exchange_type_list:
             raise ValueError(f'"Invalid exchange type: "{exchange_type}" not in {exchange_type_list}')
         self.exchange_type = exchange_type
 
-        conn_url = f"amqp://{self.user}:{password}@{self.host}/"
-        self.connection = aio_pika.connect_robust( conn_url )
+
+    async def __aenter__(self):
+        conn_url = f"amqp://{self.user}:{self.password}@{self.host}/"
+        self.connection = await aio_pika.connect_robust( conn_url )
+        return self
+    
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.connection.close()
+
 
     async def publish(self, message, routing_key=''):
         async with self.connection:
@@ -81,7 +90,6 @@ class AIOClient:
         async def on_message(message: aio_pika.abc.AbstractIncomingMessage) -> None:
             async with message.process():
                 callback(json.loads(message.body.decode()))
-                #print(f"[x] {message.body!r}")
 
         async with self.connection:
             # Creating channel
@@ -100,15 +108,4 @@ class AIOClient:
             # Start listening the queue
             await queue.consume(on_message)
 
-            print(" [*] Waiting for logs. To exit press CTRL+C")
             await asyncio.Future()
-
-
-async def aio_publish(message, host, user, password, exchange_name, exchange_type='fanout', routing_key=''):
-    client = AIOClient(host, user, password, exchange_name, exchange_type)
-    await client.publish(message, routing_key)
-
-async def aio_subscribe(callback, host, user, password, exchange_name, exchange_type='fanout', routing_key='', queue_name=''):
-    client = AIOClient(host, user, password, exchange_name, exchange_type)
-    await client.subscribe(callback, routing_key, queue_name)
-
