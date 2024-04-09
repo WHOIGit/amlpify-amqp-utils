@@ -114,3 +114,13 @@ class AIOClient:
             await queue.consume(on_message)
 
             await asyncio.Future()
+
+
+async def aio_publish(message, host, user, password, exchange_name, exchange_type='fanout', routing_key=''):
+    async with AIOClient(host, user, password, exchange_name, exchange_type) as aclient:
+        await aclient.publish(message, routing_key)
+
+async def aio_subscribe(callback, host, user, password, exchange_name, exchange_type='fanout', routing_key='', queue_name=''):
+    async with AIOClient(host, user, password, exchange_name, exchange_type) as aclient:
+    await aclient.subscribe(callback, routing_key, queue_name)
+
