@@ -94,7 +94,7 @@ class AIOClient:
     async def subscribe(self, callback, routing_key='', queue_name=''):
         async def on_message(message: aio_pika.abc.AbstractIncomingMessage) -> None:
             async with message.process():
-                callback(json.loads(message.body.decode()))
+                await callback(json.loads(message.body.decode()))
 
         async with self.connection:
             # Creating channel
