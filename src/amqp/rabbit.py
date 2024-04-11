@@ -56,7 +56,6 @@ def subscribe(callback, host, user, password, exchange_name, exchange_type='fano
         client.subscribe(callback, routing_key, queue_name)
 
 
-# AIOClient is untested (2024-04-04)
 class AIOClient:
     def __init__(self, host, user, password, exchange_name, exchange_type='direct'):
         self.host = host
