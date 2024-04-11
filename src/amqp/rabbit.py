@@ -2,7 +2,6 @@ import json
 import asyncio
 
 import pika
-from pika.exchange_type import ExchangeType
 import aio_pika
 
 
@@ -10,7 +9,7 @@ class Client:
     def __init__(self, host, user, password, exchange_name, exchange_type='direct'):
         self.host = host
         self.exchange_name = exchange_name
-        exchange_type_list = list(ExchangeType)
+        exchange_type_list = list(pika.exchange_type.ExchangeType)
         if not exchange_type in exchange_type_list:
             raise ValueError(f'"Invalid exchange type: "{exchange_type}" not in {exchange_type_list}')
         self.exchange_type = exchange_type
@@ -64,7 +63,7 @@ class AIOClient:
         self.user = user
         self.password = password
         self.exchange_name = exchange_name
-        exchange_type_list = list(ExchangeType)
+        exchange_type_list = list(aio_pika.ExchangeType)
         if not exchange_type in exchange_type_list:
             raise ValueError(f'"Invalid exchange type: "{exchange_type}" not in {exchange_type_list}')
         self.exchange_type = exchange_type
@@ -91,7 +90,7 @@ class AIOClient:
                 routing_key=routing_key
             )
 
-    async def subscribe(self, callback, routing_key='', queue_name=''):
+    async def subscribe(self, callback, routing_key='', queue_name='', qos=10):
         async def on_message(message: aio_pika.abc.AbstractIncomingMessage) -> None:
             async with message.process():
                 await callback(json.loads(message.body.decode()))
@@ -99,7 +98,7 @@ class AIOClient:
         async with self.connection:
             # Creating channel
             channel = await self.connection.channel()
-            await channel.set_qos(prefetch_count=1)
+            await channel.set_qos(prefetch_count=qos)
 
             # Declaring queue
             queue = await channel.declare_queue(queue_name, exclusive=True)
