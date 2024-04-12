@@ -118,7 +118,7 @@ async def aio_publish(message, host, user, password, exchange_name, exchange_typ
     async with AIOClient(host, user, password, exchange_name, exchange_type) as aclient:
         await aclient.publish(message, routing_key)
 
-async def aio_subscribe(callback, host, user, password, exchange_name, exchange_type='fanout', routing_key='', queue_name=''):
+async def aio_subscribe(callback, host, user, password, exchange_name, exchange_type='fanout', routing_key='', queue_name='', qos=10):
     async with AIOClient(host, user, password, exchange_name, exchange_type) as aclient:
-        await aclient.subscribe(callback, routing_key, queue_name)
+        await aclient.subscribe(callback, routing_key, queue_name, qos)
 
